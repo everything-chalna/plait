@@ -1,0 +1,27 @@
+{
+  "name": "plait",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/everything-chalna/plait.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/everything-chalna/plait/issues"
+  },
+  "homepage": "https://github.com/everything-chalna/plait#readme",
+  "dependencies": {
+    "next": "^15.3.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  }
+}
