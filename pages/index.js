@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import styles from '../styles/SimpleUI.module.css';
+import styles from '../styles/Home.module.css';
 
 export default function Home() {
   const [examplePost, setExamplePost] = useState('');
@@ -83,7 +83,7 @@ export default function Home() {
   return (
     <div className={styles.container}>
       <div className={styles.card}>
-        <h1 className={styles.title}>예시 기반 콘텐츠 생성기, Plait</h1>
+        <h1 className={styles.titleLeft}>예시 기반 콘텐츠 생성기, Plait</h1>
         
         {error && <div className={styles.errorMessage}>{error}</div>}
         
