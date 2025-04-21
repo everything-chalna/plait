@@ -60,7 +60,8 @@ export default function Home() {
         body: JSON.stringify({
           action: 'generate',
           examplePost: examplePost,
-          userContent: userContent
+          userContent: userContent,
+          analysisResult: analysisResult
         }),
       });
       
