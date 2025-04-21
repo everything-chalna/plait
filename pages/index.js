@@ -96,13 +96,13 @@ export default function Home() {
             value={examplePost}
             onChange={(e) => setExamplePost(e.target.value)}
             placeholder="예시 게시글을 입력하세요..."
-            disabled={isAnalyzing || analysisComplete}
+            disabled={isAnalyzing}
           />
           <div className={styles.buttonContainer}>
             <button 
               className={styles.button}
               onClick={handleAnalysis}
-              disabled={isAnalyzing || !examplePost.trim() || analysisComplete}
+              disabled={isAnalyzing || !examplePost.trim()}
             >
               {isAnalyzing ? '분석 중...' : 'Analysis'}
             </button>
