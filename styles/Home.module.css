@@ -281,4 +281,14 @@
 .checkbox {
   margin-right: 0.5rem;
   cursor: pointer;
+}
+
+.successMessage {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border-radius: 4px;
+  text-align: center;
+  font-weight: 500;
 } 
