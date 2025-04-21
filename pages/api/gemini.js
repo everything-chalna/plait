@@ -30,16 +30,15 @@ export default async function handler(req, res) {
       prompt = `You are a content analysis AI Assistant. Your purpose is to analyze content so that AI can generate similar style content.
 The analysis should be very specific and detailed according to the following 8 categories:
 The analysis categories are: Tone, Voice, Personality, Style, Structure, Length, and Language Features.
-
+Don't include the content or topic of the content in your analysis.
 No talk; Just do.
 
 <Content>
 ${examplePost}
 </Content>`;
     } else if (action === 'generate') {
-      prompt = `You are an AI Assistant that replicates output example styles.
-Your goal is to analyze the input, understand the output example's style, and return an output in the same format.(However, the subject of the content must be input)
-Preserve Tone, Voice, Personality, Style, Structure, Length, and Language Features.
+      prompt = `You are an AI Assistant that reprocesses '<input>'.
+Your goal is to generate output while maintaining the content and topic of <input>. First, look at <input> and understand its content and topic, then refer to <output example> and <output style> to return your output.
 Do not use Markdown style.
 Return only the output.
 No talk; Just do.
@@ -52,7 +51,9 @@ ${userContent}
 ${examplePost}
 </output example>
 
-${analysisResult}`;
+<output style>
+${analysisResult}
+</output style>`;
     }
 
     try {
