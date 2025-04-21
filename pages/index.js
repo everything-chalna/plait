@@ -8,31 +8,75 @@ export default function Home() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState('');
+  const [error, setError] = useState('');
 
-  const handleAnalysis = () => {
+  const handleAnalysis = async () => {
     if (!examplePost.trim()) return;
     
     setIsAnalyzing(true);
+    setError('');
     
-    // 실제로는 여기서 API 호출을 통해 분석을 수행합니다
-    setTimeout(() => {
-      setIsAnalyzing(false);
+    try {
+      const response = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'analyze',
+          examplePost: examplePost
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || '분석 중 오류가 발생했습니다.');
+      }
+      
+      setAnalysisResult(data.result);
       setAnalysisComplete(true);
-    }, 2000);
+    } catch (error) {
+      console.error('분석 오류:', error);
+      setError(error.message || '분석 중 오류가 발생했습니다.');
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!userContent.trim() || !analysisComplete) return;
     
     setIsGenerating(true);
+    setError('');
     
-    // 실제로는 여기서 API 호출을 통해 콘텐츠를 생성합니다
-    setTimeout(() => {
+    try {
+      const response = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'generate',
+          examplePost: examplePost,
+          userContent: userContent
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || '생성 중 오류가 발생했습니다.');
+      }
+      
+      setGeneratedContent(data.result);
+    } catch (error) {
+      console.error('생성 오류:', error);
+      setError(error.message || '생성 중 오류가 발생했습니다.');
+    } finally {
       setIsGenerating(false);
-      setGeneratedContent(
-        `${userContent}\n\n이 내용을 바탕으로 예시 게시글 스타일로 변환된 콘텐츠입니다.\n\n분석된 예시 게시글의 스타일과 구조를 반영하여 생성되었습니다.`
-      );
-    }, 3000);
+    }
   };
 
   return (
@@ -40,6 +84,8 @@ export default function Home() {
       <main className={styles.main}>
         <h1 className={styles.title}>Plait</h1>
         <p className={styles.subtitle}>예시를 기반으로 맞춤형 콘텐츠를 생성하세요</p>
+        
+        {error && <div className={styles.errorMessage}>{error}</div>}
         
         <div className={styles.grid}>
           <div className={styles.card}>
@@ -61,6 +107,13 @@ export default function Home() {
             >
               {isAnalyzing ? '분석 중...' : analysisComplete ? '분석 완료' : '예시 게시글 분석 (Analysis)'}
             </button>
+            
+            {analysisComplete && (
+              <div className={styles.analysisResult}>
+                <h3>분석 결과</h3>
+                <p>{analysisResult}</p>
+              </div>
+            )}
           </div>
 
           <div className={`${styles.card} ${!analysisComplete ? styles.disabled : ''}`}>

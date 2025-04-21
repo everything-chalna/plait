@@ -228,4 +228,37 @@
   border-radius: 5px;
   font-size: 1rem;
   cursor: pointer;
+}
+
+.errorMessage {
+  background-color: #ffebee;
+  color: #d32f2f;
+  padding: 1rem;
+  border-radius: 5px;
+  margin-bottom: 2rem;
+  width: 100%;
+  text-align: center;
+  font-weight: 500;
+}
+
+.analysisResult {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: #f1f8e9;
+  border-radius: 5px;
+  border-left: 4px solid #7cb342;
+}
+
+.analysisResult h3 {
+  font-size: 1.1rem;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  color: #558b2f;
+}
+
+.analysisResult p {
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.5;
+  color: #333;
 } 
