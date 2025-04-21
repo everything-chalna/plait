@@ -62,8 +62,6 @@ First, look at the <input> and understand the content and topic. Then, refer to 
 Do not use Markdown style.
 Return only the output.
 No talk; Just do.
-output instructions:
-${analysisResult}
 
 <input>
 ${userContent}
@@ -81,19 +79,28 @@ ${examplePost}
       const startTime = Date.now();
       console.log(`Gemini API 호출 시작 - ${new Date().toISOString()}`);
       
+      const requestBody = {
+        contents: [{
+          parts: [{ text: prompt }]
+        }],
+        generationConfig: {
+          temperature: parseFloat(temperature)
+        }
+      };
+
+      // generate 액션인 경우 systemInstruction 추가
+      if (action === 'generate' && analysisResult) {
+        requestBody.systemInstruction = {
+          parts: [{ text: analysisResult }]
+        };
+      }
+      
       const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{ text: prompt }]
-          }],
-          generationConfig: {
-            temperature: parseFloat(temperature)
-          }
-        }),
+        body: JSON.stringify(requestBody),
       });
       
       const endTime = Date.now();
