@@ -10,6 +10,7 @@ export default function Home() {
   const [analysisComplete, setAnalysisComplete] = useState(false);
   const [analysisResult, setAnalysisResult] = useState('');
   const [error, setError] = useState('');
+  const [showResults, setShowResults] = useState(true);
 
   const handleAnalysis = async () => {
     if (!examplePost.trim()) return;
@@ -86,6 +87,18 @@ export default function Home() {
         <h1 className={styles.title}>Plait</h1>
         <p className={styles.subtitle}>예시를 기반으로 맞춤형 콘텐츠를 생성하세요</p>
         
+        <div className={styles.settingsBar}>
+          <label className={styles.checkboxLabel}>
+            <input 
+              type="checkbox" 
+              checked={showResults} 
+              onChange={() => setShowResults(!showResults)}
+              className={styles.checkbox}
+            />
+            결과 표시
+          </label>
+        </div>
+        
         {error && <div className={styles.errorMessage}>{error}</div>}
         
         <div className={styles.grid}>
@@ -109,7 +122,7 @@ export default function Home() {
               {isAnalyzing ? '분석 중...' : analysisComplete ? '분석 완료' : '예시 게시글 분석 (Analysis)'}
             </button>
             
-            {analysisComplete && (
+            {analysisComplete && showResults && (
               <div className={styles.analysisResult}>
                 <h3>분석 결과</h3>
                 <p>{analysisResult}</p>
@@ -138,19 +151,21 @@ export default function Home() {
             </button>
           </div>
 
-          <div className={`${styles.card} ${styles.resultCard} ${!generatedContent ? styles.disabled : ''}`}>
-            <h2 className={styles.cardTitle}>3. AI 생성 콘텐츠</h2>
-            <p className={styles.description}>
-              예시 게시글의 스타일을 적용한 생성 결과입니다.
-            </p>
-            <div className={styles.resultContent}>
-              {generatedContent ? (
-                <pre className={styles.generatedText}>{generatedContent}</pre>
-              ) : (
-                <p className={styles.placeholder}>콘텐츠가 생성되면 이곳에 표시됩니다.</p>
-              )}
+          {(showResults || !generatedContent) && (
+            <div className={`${styles.card} ${styles.resultCard} ${!generatedContent ? styles.disabled : ''}`}>
+              <h2 className={styles.cardTitle}>3. AI 생성 콘텐츠</h2>
+              <p className={styles.description}>
+                예시 게시글의 스타일을 적용한 생성 결과입니다.
+              </p>
+              <div className={styles.resultContent}>
+                {generatedContent ? (
+                  <pre className={styles.generatedText}>{generatedContent}</pre>
+                ) : (
+                  <p className={styles.placeholder}>콘텐츠가 생성되면 이곳에 표시됩니다.</p>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
     </div>

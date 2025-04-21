@@ -261,4 +261,24 @@
   white-space: pre-wrap;
   line-height: 1.5;
   color: #333;
+}
+
+.settingsBar {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.checkbox {
+  margin-right: 0.5rem;
+  cursor: pointer;
 } 
