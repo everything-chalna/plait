@@ -30,7 +30,6 @@ export default async function handler(req, res) {
       prompt = `You are a content analysis AI Assistant. Your purpose is to analyze content so that AI can generate similar style content.
 The analysis should be very specific and detailed according to the following 8 categories:
 The analysis categories are: Tone, Voice, Personality, Style, Structure, Length, and Language Features.
-Don't include the content or topic of the content in your analysis.
 No talk; Just do.
 
 <Content>
