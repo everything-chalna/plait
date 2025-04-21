@@ -1,5 +1,5 @@
 // Gemini API를 호출하는 API 엔드포인트
-const GEMINI_API_KEY = 'AIzaSyAOBklure_JBFuHLbXyO8BO_A1XEKdiMTg';
+const GEMINI_API_KEY = 'AIzaSyDLsCh3BfcdX-TvVBcif-intfVWd45CEGA';
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
 export default async function handler(req, res) {
@@ -56,11 +56,14 @@ No talk; Just do.
 ${examplePost}
 </Content>`;
     } else if (action === 'generate') {
-      prompt = `You are an AI Assistant that reprocesses '<input>'.
-Your goal is to generate output while maintaining the content and topic of <input>. First, look at <input> and understand its content and topic, then refer to <output example> and <output style> to return your output.
+      prompt = `You are an AI Assistant that generates content.
+Your purpose is to look at the <input> and generate content like the <output example>.
+First, look at the <input> and understand the content and topic. Then, refer to the <output example> to produce your output.
 Do not use Markdown style.
 Return only the output.
 No talk; Just do.
+output instructions:
+${analysisResult}
 
 <input>
 ${userContent}
@@ -68,11 +71,7 @@ ${userContent}
 
 <output example>
 ${examplePost}
-</output example>
-
-<output style>
-${analysisResult}
-</output style>`;
+</output example>`;
     }
     
     console.log(`프롬프트 유형: ${action}`);
