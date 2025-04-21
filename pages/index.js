@@ -16,8 +16,12 @@ export default function Home() {
   const handleAnalysis = async () => {
     if (!examplePost.trim()) return;
     
+    // 새 분석 시작 시 이전 상태 초기화
     setIsAnalyzing(true);
     setError('');
+    setAnalysisResult('');
+    setAnalysisComplete(false);
+    setGeneratedContents({});
     
     try {
       const response = await fetch('/api/gemini', {
@@ -49,12 +53,13 @@ export default function Home() {
     } catch (error) {
       console.error('분석 오류:', error);
       setError(error.message || '분석 중 오류가 발생했습니다.');
+      setAnalysisComplete(false);
       setPendingGeneration(false); // 에러 발생 시 대기 중인 생성 요청 취소
     } finally {
       setIsAnalyzing(false);
       
       // 분석이 완료되고 대기 중인 생성 요청이 있으면 생성 시작
-      if (pendingGeneration && userContent.trim()) {
+      if (pendingGeneration && userContent.trim() && analysisComplete) {
         setPendingGeneration(false);
         handleGenerateMultiple();
       }
