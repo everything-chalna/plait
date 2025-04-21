@@ -12,6 +12,19 @@ export default async function handler(req, res) {
 
   try {
     const { action, examplePost, userContent, analysisResult, temperature = 0.7 } = req.body;
+    
+    console.log(`======= API 호출 시작 =======`);
+    console.log(`Action: ${action}`);
+    console.log(`Temperature: ${temperature}`);
+    console.log(`Time: ${new Date().toISOString()}`);
+    
+    if (action === 'analyze') {
+      console.log(`Example Post 길이: ${examplePost?.length || 0}자`);
+    } else if (action === 'generate') {
+      console.log(`Example Post 길이: ${examplePost?.length || 0}자`);
+      console.log(`User Content 길이: ${userContent?.length || 0}자`);
+      console.log(`Analysis Result 길이: ${analysisResult?.length || 0}자`);
+    }
 
     if (!action) {
       return res.status(400).json({ error: 'Action is required' });
@@ -27,9 +40,16 @@ export default async function handler(req, res) {
 
     let prompt;
     if (action === 'analyze') {
-      prompt = `You are a content analysis AI Assistant. Your purpose is to analyze content so that AI can generate similar style content.
-The analysis should be very specific and detailed according to the following 8 categories:
-The analysis categories are: Tone, Voice, Personality, Style, Structure, Length, and Language Features.
+      prompt = `You are a content analysis AI Assistant. Your task is to analyze the provided text in detail according to the following categories:
+
+1. Tone: Analyze the emotional quality and approach of the text (casual, formal, advisory, etc.)
+2. Voice: Identify the perspective and speaking position (first-person, third-person, etc.)
+3. Personality: Describe the character traits and values that come through in the writing
+4. Style: Examine the writing techniques, sentence structure, and linguistic choices
+5. Structure: Analyze how the content is organized and formatted
+6. Length: Provide specifics about the text's size and reading time
+
+For each category, provide specific examples from the text to support your analysis. Be thorough and detailed, focusing on identifying patterns that would allow someone to recreate similar content.
 No talk; Just do.
 
 <Content>
@@ -54,8 +74,14 @@ ${examplePost}
 ${analysisResult}
 </output style>`;
     }
+    
+    console.log(`프롬프트 유형: ${action}`);
+    console.log(`프롬프트 길이: ${prompt.length}자`);
 
     try {
+      const startTime = Date.now();
+      console.log(`Gemini API 호출 시작 - ${new Date().toISOString()}`);
+      
       const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
         method: 'POST',
         headers: {
@@ -70,6 +96,9 @@ ${analysisResult}
           }
         }),
       });
+      
+      const endTime = Date.now();
+      console.log(`Gemini API 응답 수신 - 소요시간: ${endTime - startTime}ms`);
 
       // 응답이 정상적인지 확인
       if (!response.ok) {
@@ -98,6 +127,9 @@ ${analysisResult}
       }
 
       const result = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      
+      console.log(`API 응답 결과 길이: ${result.length}자`);
+      console.log(`======= API 호출 완료 =======`);
       
       return res.status(200).json({ result });
     } catch (apiError) {
