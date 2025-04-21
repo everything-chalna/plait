@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { action, examplePost, userContent, analysisResult } = req.body;
+    const { action, examplePost, userContent, analysisResult, temperature = 0.7 } = req.body;
 
     if (!action) {
       return res.status(400).json({ error: 'Action is required' });
@@ -34,28 +34,23 @@ No talk; Just do.
 ${examplePost}
 </Content>`;
     } else if (action === 'generate') {
-      prompt = `
-      ### 지시사항:
-      당신은 사용자가 제공한 예시 게시글과 유사한 스타일로 콘텐츠를 생성하는 AI입니다.
+      prompt = `You are an AI Assistant that replicates output example styles.
+Your goal is to analyze the input, understand the output example's style, and return an output in the same format.(However, the subject of the content must be input)
+Preserve Tone, Voice, Personality, Style, Structure, Length, and Language Features.
+Do not use Markdown style.
+Return only the output.
+No talk; Just do.
 
-      다음은 참고해야 할 예시 게시글입니다:
-      """
-      ${examplePost}
-      """
+<input>
+${userContent}
+</input>
 
-      다음은 위 예시 게시글에 대한 상세 분석 결과입니다:
-      """
-      ${analysisResult || '분석 결과가 없습니다.'}
-      """
+<output example>
+${examplePost}
+</output example>
 
-      위 예시 게시글의 스타일, 구조, 톤을 참고하고, 분석 결과에 명시된 특성들을 최대한 반영하여 아래 내용을 예시 게시글과 동일한 스타일로 재작성해주세요:
-      """
-      ${userContent}
-      """
-
-      예시 게시글의 형식, 어투, 문체, 구성 방식, 단락 구조 등을 최대한 유지하면서 내용을 재구성해주세요.
-      분석 결과에 명시된 모든 특성(톤, 보이스, 개성, 스타일, 구조, 길이, 언어적 특징)을 반영하세요.
-      `;
+Context Dumps:
+${analysisResult}`;
     }
 
     const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
@@ -66,7 +61,10 @@ ${examplePost}
       body: JSON.stringify({
         contents: [{
           parts: [{ text: prompt }]
-        }]
+        }],
+        generationConfig: {
+          temperature: parseFloat(temperature)
+        }
       }),
     });
 

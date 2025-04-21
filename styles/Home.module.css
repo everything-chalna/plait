@@ -54,6 +54,32 @@
   padding: 2rem;
 }
 
+.settings {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.settingLabel {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.slider {
+  margin: 1rem 0;
+  width: 100%;
+  cursor: pointer;
+}
+
+.settingHint {
+  font-size: 0.8rem;
+  color: #666;
+  text-align: center;
+}
+
 .section {
   margin-bottom: 1.5rem;
 }

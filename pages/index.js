@@ -10,6 +10,7 @@ export default function Home() {
   const [analysisComplete, setAnalysisComplete] = useState(false);
   const [analysisResult, setAnalysisResult] = useState('');
   const [error, setError] = useState('');
+  const [temperature, setTemperature] = useState(0.7);
 
   const handleAnalysis = async () => {
     if (!examplePost.trim()) return;
@@ -25,7 +26,8 @@ export default function Home() {
         },
         body: JSON.stringify({
           action: 'analyze',
-          examplePost: examplePost
+          examplePost: examplePost,
+          temperature: temperature
         }),
       });
       
@@ -61,7 +63,8 @@ export default function Home() {
           action: 'generate',
           examplePost: examplePost,
           userContent: userContent,
-          analysisResult: analysisResult
+          analysisResult: analysisResult,
+          temperature: temperature
         }),
       });
       
@@ -86,6 +89,24 @@ export default function Home() {
         <h1 className={styles.titleLeft}>예시 기반 콘텐츠 생성기, Plait</h1>
         
         {error && <div className={styles.errorMessage}>{error}</div>}
+        
+        <div className={styles.settings}>
+          <label className={styles.settingLabel}>
+            Temperature: {temperature}
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.1"
+              value={temperature}
+              onChange={(e) => setTemperature(parseFloat(e.target.value))}
+              className={styles.slider}
+            />
+            <span className={styles.settingHint}>
+              낮음 (정확함) ↔ 높음 (창의적)
+            </span>
+          </label>
+        </div>
         
         <div className={styles.section}>
           <label className={styles.label}>
