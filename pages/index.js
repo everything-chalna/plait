@@ -89,7 +89,7 @@ export default function Home() {
         
         <div className={styles.section}>
           <label className={styles.label}>
-            <span className={styles.labelText}>Input</span> 예시 입력하기
+            <span className={styles.labelBox}>Input</span> 예시 입력하기
           </label>
           <textarea 
             className={styles.textarea}
@@ -104,14 +104,14 @@ export default function Home() {
               onClick={handleAnalysis}
               disabled={isAnalyzing || !examplePost.trim()}
             >
-              {isAnalyzing ? '분석 중...' : 'Analysis'}
+              {isAnalyzing ? 'Analyzing...' : 'Analysis'}
             </button>
           </div>
         </div>
         
         <div className={`${styles.section} ${!analysisComplete ? styles.disabled : ''}`}>
           <label className={styles.label}>
-            <span className={styles.labelText}>Input</span> 콘텐츠 입력
+            <span className={styles.labelBox}>Input</span> 콘텐츠 입력
           </label>
           <textarea 
             className={styles.textarea}
@@ -126,14 +126,14 @@ export default function Home() {
               onClick={handleGenerate}
               disabled={!analysisComplete || !userContent.trim() || isGenerating}
             >
-              {isGenerating ? '생성 중...' : 'Generate'}
+              {isGenerating ? 'Generating...' : 'Generate'}
             </button>
           </div>
         </div>
         
         <div className={`${styles.section} ${!generatedContent ? styles.disabled : ''}`}>
           <label className={styles.label}>
-            <span className={styles.labelText}>Output</span> 생성 결과
+            <span className={styles.labelBox}>Output</span> 생성 결과
           </label>
           <div className={styles.outputContainer}>
             {generatedContent ? (
