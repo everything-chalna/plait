@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import styles from '../styles/Home.module.css';
+import styles from '../styles/SimpleUI.module.css';
 
 export default function Home() {
   const [examplePost, setExamplePost] = useState('');
@@ -82,70 +82,68 @@ export default function Home() {
 
   return (
     <div className={styles.container}>
-      <main className={styles.main}>
-        <h1 className={styles.title}>Plait</h1>
-        <p className={styles.subtitle}>예시를 기반으로 맞춤형 콘텐츠를 생성하세요</p>
+      <div className={styles.card}>
+        <h1 className={styles.title}>예시 기반 콘텐츠 생성기, Plait</h1>
         
         {error && <div className={styles.errorMessage}>{error}</div>}
         
-        <div className={styles.grid}>
-          <div className={styles.card}>
-            <h2 className={styles.cardTitle}>1. 예시 게시글 입력</h2>
-            <p className={styles.description}>
-              AI가 분석할 예시 게시글을 입력하세요. 스타일, 구조, 톤이 분석됩니다.
-            </p>
-            <textarea 
-              className={styles.textarea}
-              value={examplePost}
-              onChange={(e) => setExamplePost(e.target.value)}
-              placeholder="예시 게시글을 입력하세요..."
-              disabled={isAnalyzing || analysisComplete}
-            />
+        <div className={styles.section}>
+          <label className={styles.label}>
+            <span className={styles.labelText}>Input</span> 예시 입력하기
+          </label>
+          <textarea 
+            className={styles.textarea}
+            value={examplePost}
+            onChange={(e) => setExamplePost(e.target.value)}
+            placeholder="예시 게시글을 입력하세요..."
+            disabled={isAnalyzing || analysisComplete}
+          />
+          <div className={styles.buttonContainer}>
             <button 
-              className={`${styles.button} ${styles.analyzeButton}`}
+              className={styles.button}
               onClick={handleAnalysis}
               disabled={isAnalyzing || !examplePost.trim() || analysisComplete}
             >
-              {isAnalyzing ? '분석 중...' : analysisComplete ? '분석 완료' : '예시 게시글 분석 (Analysis)'}
+              {isAnalyzing ? '분석 중...' : 'Analysis'}
             </button>
           </div>
-
-          <div className={`${styles.card} ${!analysisComplete ? styles.disabled : ''}`}>
-            <h2 className={styles.cardTitle}>2. 유저 콘텐츠 입력</h2>
-            <p className={styles.description}>
-              변환하고 싶은 내용을 입력하세요. 예시 게시글 스타일로 변환됩니다.
-            </p>
-            <textarea 
-              className={styles.textarea}
-              value={userContent}
-              onChange={(e) => setUserContent(e.target.value)}
-              placeholder="변환할 내용을 입력하세요..."
-              disabled={!analysisComplete || isGenerating}
-            />
+        </div>
+        
+        <div className={`${styles.section} ${!analysisComplete ? styles.disabled : ''}`}>
+          <label className={styles.label}>
+            <span className={styles.labelText}>Input</span> 콘텐츠 입력
+          </label>
+          <textarea 
+            className={styles.textarea}
+            value={userContent}
+            onChange={(e) => setUserContent(e.target.value)}
+            placeholder="변환할 내용을 입력하세요..."
+            disabled={!analysisComplete || isGenerating}
+          />
+          <div className={styles.buttonContainer}>
             <button 
-              className={`${styles.button} ${styles.generateButton}`}
+              className={styles.button}
               onClick={handleGenerate}
               disabled={!analysisComplete || !userContent.trim() || isGenerating}
             >
-              {isGenerating ? '생성 중...' : 'AI 콘텐츠 생성 (Generate)'}
+              {isGenerating ? '생성 중...' : 'Generate'}
             </button>
           </div>
-
-          <div className={`${styles.card} ${styles.resultCard} ${!generatedContent ? styles.disabled : ''}`}>
-            <h2 className={styles.cardTitle}>3. AI 생성 콘텐츠</h2>
-            <p className={styles.description}>
-              예시 게시글의 스타일을 적용한 생성 결과입니다.
-            </p>
-            <div className={styles.resultContent}>
-              {generatedContent ? (
-                <pre className={styles.generatedText}>{generatedContent}</pre>
-              ) : (
-                <p className={styles.placeholder}>콘텐츠가 생성되면 이곳에 표시됩니다.</p>
-              )}
-            </div>
+        </div>
+        
+        <div className={`${styles.section} ${!generatedContent ? styles.disabled : ''}`}>
+          <label className={styles.label}>
+            <span className={styles.labelText}>Output</span> 생성 결과
+          </label>
+          <div className={styles.outputContainer}>
+            {generatedContent ? (
+              <div className={styles.generatedText}>{generatedContent}</div>
+            ) : (
+              <div className={styles.placeholder}>생성된 콘텐츠가 여기에 표시됩니다</div>
+            )}
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 } 
