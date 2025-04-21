@@ -3,6 +3,9 @@ const GEMINI_API_KEY = 'AIzaSyAOBklure_JBFuHLbXyO8BO_A1XEKdiMTg';
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
 export default async function handler(req, res) {
+  // Content-Type 헤더 설정
+  res.setHeader('Content-Type', 'application/json');
+  
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -49,35 +52,60 @@ ${userContent}
 ${examplePost}
 </output example>
 
-Context Dumps:
 ${analysisResult}`;
     }
 
-    const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{ text: prompt }]
-        }],
-        generationConfig: {
-          temperature: parseFloat(temperature)
-        }
-      }),
-    });
+    try {
+      const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: prompt }]
+          }],
+          generationConfig: {
+            temperature: parseFloat(temperature)
+          }
+        }),
+      });
 
-    const data = await response.json();
+      // 응답이 정상적인지 확인
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Gemini API 응답 에러:', response.status, errorText);
+        return res.status(500).json({ 
+          error: `Gemini API 호출 실패 (${response.status}): ${errorText.substring(0, 100)}` 
+        });
+      }
 
-    if (data.error) {
-      console.error('Gemini API Error:', data.error);
-      return res.status(500).json({ error: data.error.message || 'API 호출 중 오류가 발생했습니다.' });
+      // 응답 형식이 JSON인지 확인
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Gemini API가 JSON이 아닌 응답을 반환:', text.substring(0, 100));
+        return res.status(500).json({ 
+          error: 'Gemini API가 유효한 JSON 형식으로 응답하지 않았습니다.' 
+        });
+      }
+
+      const data = await response.json();
+
+      if (data.error) {
+        console.error('Gemini API Error:', data.error);
+        return res.status(500).json({ error: data.error.message || 'API 호출 중 오류가 발생했습니다.' });
+      }
+
+      const result = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      
+      return res.status(200).json({ result });
+    } catch (apiError) {
+      console.error('Gemini API 호출 중 예외 발생:', apiError);
+      return res.status(500).json({ 
+        error: `Gemini API 호출 중 오류: ${apiError.message}` 
+      });
     }
-
-    const result = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    
-    return res.status(200).json({ result });
   } catch (error) {
     console.error('API 처리 중 오류 발생:', error);
     return res.status(500).json({ error: '서버 오류가 발생했습니다.' });

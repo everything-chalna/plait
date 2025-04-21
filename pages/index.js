@@ -4,13 +4,14 @@ import styles from '../styles/Home.module.css';
 export default function Home() {
   const [examplePost, setExamplePost] = useState('');
   const [userContent, setUserContent] = useState('');
-  const [generatedContent, setGeneratedContent] = useState('');
+  const [generatedContents, setGeneratedContents] = useState({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
   const [analysisResult, setAnalysisResult] = useState('');
   const [error, setError] = useState('');
-  const [temperature, setTemperature] = useState(0.7);
+  const [pendingGeneration, setPendingGeneration] = useState(false);
+  const temperatureValues = [0, 0.5, 1.0, 1.5, 2.0];
 
   const handleAnalysis = async () => {
     if (!examplePost.trim()) return;
@@ -27,9 +28,15 @@ export default function Home() {
         body: JSON.stringify({
           action: 'analyze',
           examplePost: examplePost,
-          temperature: temperature
+          temperature: 0.7
         }),
       });
+      
+      // 응답이 JSON인지 확인
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('API 응답이 유효한 JSON 형식이 아닙니다.');
+      }
       
       const data = await response.json();
       
@@ -42,39 +49,88 @@ export default function Home() {
     } catch (error) {
       console.error('분석 오류:', error);
       setError(error.message || '분석 중 오류가 발생했습니다.');
+      setPendingGeneration(false); // 에러 발생 시 대기 중인 생성 요청 취소
     } finally {
       setIsAnalyzing(false);
+      
+      // 분석이 완료되고 대기 중인 생성 요청이 있으면 생성 시작
+      if (pendingGeneration && userContent.trim()) {
+        setPendingGeneration(false);
+        handleGenerateMultiple();
+      }
     }
   };
 
-  const handleGenerate = async () => {
+  const handleGenerateMultiple = async () => {
+    // 분석 중이면 대기 상태로 설정하고 리턴
+    if (isAnalyzing) {
+      setPendingGeneration(true);
+      return;
+    }
+    
     if (!userContent.trim() || !analysisComplete) return;
     
     setIsGenerating(true);
     setError('');
+    setGeneratedContents({});
     
     try {
-      const response = await fetch('/api/gemini', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'generate',
-          examplePost: examplePost,
-          userContent: userContent,
-          analysisResult: analysisResult,
-          temperature: temperature
-        }),
+      // 여러 Temperature 값에 대해 병렬로 API 호출
+      const requests = temperatureValues.map(temp => 
+        fetch('/api/gemini', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'generate',
+            examplePost: examplePost,
+            userContent: userContent,
+            analysisResult: analysisResult,
+            temperature: temp
+          }),
+        })
+        .then(async response => {
+          // 응답이 JSON인지 확인
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            console.error('Invalid JSON response:', text.substring(0, 100));
+            throw new Error(`API 응답이 유효한 JSON 형식이 아닙니다. (Temperature: ${temp})`);
+          }
+          
+          return response.json();
+        })
+        .then(data => {
+          if (data.error) throw new Error(`Temperature ${temp}: ${data.error}`);
+          return { temp, result: data.result };
+        })
+        .catch(error => {
+          console.error(`Temperature ${temp} 처리 중 오류:`, error);
+          throw error;
+        })
+      );
+      
+      // 모든 요청 결과 기다리기 (일부 실패해도 계속 진행)
+      const results = await Promise.allSettled(requests);
+      
+      // 성공한 결과만 모아서 객체로 변환
+      const contents = {};
+      let hasSuccessfulResult = false;
+      
+      results.forEach(result => {
+        if (result.status === 'fulfilled') {
+          contents[result.value.temp] = result.value.result;
+          hasSuccessfulResult = true;
+        }
       });
       
-      const data = await response.json();
+      setGeneratedContents(contents);
       
-      if (!response.ok) {
-        throw new Error(data.error || '생성 중 오류가 발생했습니다.');
+      if (!hasSuccessfulResult) {
+        throw new Error('모든 Temperature 값에 대한 생성이 실패했습니다.');
       }
       
-      setGeneratedContent(data.result);
     } catch (error) {
       console.error('생성 오류:', error);
       setError(error.message || '생성 중 오류가 발생했습니다.');
@@ -89,24 +145,6 @@ export default function Home() {
         <h1 className={styles.titleLeft}>예시 기반 콘텐츠 생성기, Plait</h1>
         
         {error && <div className={styles.errorMessage}>{error}</div>}
-        
-        <div className={styles.settings}>
-          <label className={styles.settingLabel}>
-            Temperature: {temperature}
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.1"
-              value={temperature}
-              onChange={(e) => setTemperature(parseFloat(e.target.value))}
-              className={styles.slider}
-            />
-            <span className={styles.settingHint}>
-              낮음 (정확함) ↔ 높음 (창의적)
-            </span>
-          </label>
-        </div>
         
         <div className={styles.section}>
           <label className={styles.label}>
@@ -130,7 +168,7 @@ export default function Home() {
           </div>
         </div>
         
-        <div className={`${styles.section} ${!analysisComplete ? styles.disabled : ''}`}>
+        <div className={`${styles.section} ${!analysisComplete && !isAnalyzing ? styles.disabled : ''}`}>
           <label className={styles.label}>
             <span className={styles.labelBox}>Input</span> 콘텐츠 입력
           </label>
@@ -139,31 +177,35 @@ export default function Home() {
             value={userContent}
             onChange={(e) => setUserContent(e.target.value)}
             placeholder="변환할 내용을 입력하세요..."
-            disabled={!analysisComplete || isGenerating}
+            disabled={isGenerating}
           />
           <div className={styles.buttonContainer}>
             <button 
               className={styles.button}
-              onClick={handleGenerate}
-              disabled={!analysisComplete || !userContent.trim() || isGenerating}
+              onClick={handleGenerateMultiple}
+              disabled={(!analysisComplete && !isAnalyzing) || !userContent.trim() || isGenerating || pendingGeneration}
             >
-              {isGenerating ? 'Generating...' : 'Generate'}
+              {isGenerating ? 'Generating...' : pendingGeneration ? 'Waiting for analysis...' : 'Generate'}
             </button>
           </div>
         </div>
         
-        <div className={`${styles.section} ${!generatedContent ? styles.disabled : ''}`}>
-          <label className={styles.label}>
-            <span className={styles.labelBox}>Output</span> 생성 결과
-          </label>
-          <div className={styles.outputContainer}>
-            {generatedContent ? (
-              <div className={styles.generatedText}>{generatedContent}</div>
-            ) : (
-              <div className={styles.placeholder}>생성된 콘텐츠가 여기에 표시됩니다</div>
-            )}
+        {Object.keys(generatedContents).length > 0 && (
+          <div className={styles.section}>
+            <label className={styles.label}>
+              <span className={styles.labelBox}>Output</span> 콘텐츠 생성 결과
+            </label>
+            {temperatureValues.map((temp, index) => (
+              <div key={temp} className={styles.outputContainer} style={{marginBottom: index < temperatureValues.length - 1 ? '15px' : '0'}}>
+                {generatedContents[temp] ? (
+                  <div className={styles.generatedText}>{generatedContents[temp]}</div>
+                ) : (
+                  <div className={styles.placeholder}>생성 실패 또는 진행 중</div>
+                )}
+              </div>
+            ))}
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
