@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from '../styles/Home.module.css';
 
 export default function Home() {
@@ -11,7 +11,18 @@ export default function Home() {
   const [analysisResult, setAnalysisResult] = useState('');
   const [error, setError] = useState('');
   const [pendingGeneration, setPendingGeneration] = useState(false);
+  const [showToast, setShowToast] = useState(false);
   const temperatureValues = [0, 0.5, 1.0, 1.5, 2.0];
+
+  useEffect(() => {
+    if (analysisComplete) {
+      setShowToast(true);
+      const timer = setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [analysisComplete]);
 
   const addExampleInput = () => {
     if (examplePosts.length < 5) {
@@ -253,6 +264,12 @@ export default function Home() {
                 )}
               </div>
             ))}
+          </div>
+        )}
+
+        {showToast && (
+          <div className={styles.toast}>
+            Analysis complete! You can now generate content based on the examples.
           </div>
         )}
       </div>
