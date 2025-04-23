@@ -189,23 +189,23 @@ export default function Home() {
                     disabled={isAnalyzing}
                     title="예시 삭제"
                   >
-                    -
-                  </button>
-                )}
-                {index === examplePosts.length - 1 && examplePosts.length < 5 && (
-                  <button 
-                    className={`${styles.iconButton} ${styles.addButton}`}
-                    onClick={addExampleInput}
-                    disabled={isAnalyzing}
-                    title="예시 추가"
-                  >
-                    +
+                    ×
                   </button>
                 )}
               </div>
             </div>
           ))}
           <div className={styles.buttonContainer}>
+            {examplePosts.length < 5 && (
+              <button 
+                className={`${styles.button} ${styles.addExampleButton}`}
+                onClick={addExampleInput}
+                disabled={isAnalyzing}
+                title="예시 추가"
+              >
+                + Add example
+              </button>
+            )}
             <button 
               className={styles.button}
               onClick={handleAnalysis}
