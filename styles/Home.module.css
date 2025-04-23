@@ -429,15 +429,16 @@
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: #333;
-  color: white;
+  background-color: #81C784;
+  color: #1B5E20;
   padding: 12px 24px;
   border-radius: 4px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   animation: fadeInOut 3s ease;
   opacity: 0;
   pointer-events: none;
+  border-left: 4px solid #43A047;
 }
 
 @keyframes fadeInOut {

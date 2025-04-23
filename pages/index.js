@@ -12,10 +12,12 @@ export default function Home() {
   const [error, setError] = useState('');
   const [pendingGeneration, setPendingGeneration] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
   const temperatureValues = [0, 0.5, 1.0, 1.5, 2.0];
 
   useEffect(() => {
     if (analysisComplete) {
+      setToastMessage('Analysis complete!');
       setShowToast(true);
       const timer = setTimeout(() => {
         setShowToast(false);
@@ -23,6 +25,14 @@ export default function Home() {
       return () => clearTimeout(timer);
     }
   }, [analysisComplete]);
+
+  const showToastMessage = (message) => {
+    setToastMessage(message);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 3000);
+  };
 
   const addExampleInput = () => {
     if (examplePosts.length < 5) {
@@ -164,6 +174,8 @@ export default function Home() {
         throw new Error('모든 Temperature 값에 대한 생성이 실패했습니다.');
       }
       
+      showToastMessage('Generate complete!');
+      
     } catch (error) {
       console.error('생성 오류:', error);
       setError(error.message || '생성 중 오류가 발생했습니다.');
@@ -269,7 +281,7 @@ export default function Home() {
 
         {showToast && (
           <div className={styles.toast}>
-            Analysis complete! You can now generate content based on the examples.
+            {toastMessage}
           </div>
         )}
       </div>
