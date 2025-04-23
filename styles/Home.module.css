@@ -22,15 +22,16 @@
 .titleLeft {
   font-size: 1.5rem;
   font-weight: 600;
-  margin-bottom: 2rem;
+  margin-bottom: 0.1rem;
   text-align: left;
 }
 
 .subtitle {
-  font-size: 1.2rem;
-  text-align: center;
-  color: #666;
-  margin-bottom: 3rem;
+  font-size: 1rem;
+  text-align: left;
+  color: #777;
+  margin-bottom: 2rem;
+  font-weight: 400;
 }
 
 .grid {
@@ -81,7 +82,7 @@
 }
 
 .section {
-  margin-bottom: 1.5rem;
+  margin-bottom: 2.5rem;
 }
 
 .section.disabled {

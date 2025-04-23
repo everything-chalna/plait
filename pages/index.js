@@ -187,7 +187,8 @@ export default function Home() {
   return (
     <div className={styles.container}>
       <div className={styles.card}>
-        <h1 className={styles.titleLeft}>예시 기반 콘텐츠 생성기, Plait</h1>
+        <h1 className={styles.titleLeft}>예시 기반 콘텐츠 생성기 Plait</h1>
+        <p className={styles.subtitle}>예시를 분석해, 콘텐츠를 예시처럼 만들어줍니다</p>
         
         {error && <div className={styles.errorMessage}>{error}</div>}
         
