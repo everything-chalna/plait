@@ -345,4 +345,69 @@
   text-align: center;
   color: #999;
   background-color: #f9f9f9;
+}
+
+/* 예시 입력 컨테이너 스타일 */
+.exampleContainer {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+/* 예시 버튼 컨테이너 스타일 */
+.exampleButtonContainer {
+  position: absolute;
+  right: 0.5rem;
+  top: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* 아이콘 버튼 공통 스타일 */
+.iconButton {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+/* 추가 버튼 스타일 */
+.addButton {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.addButton:hover:not(:disabled) {
+  background-color: #3e8e41;
+}
+
+/* 삭제 버튼 스타일 */
+.removeButton {
+  background-color: #f44336;
+  color: white;
+}
+
+.removeButton:hover:not(:disabled) {
+  background-color: #d32f2f;
+}
+
+/* 비활성화된 버튼 스타일 */
+.iconButton:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Temperature 레이블 스타일 */
+.temperatureLabel {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #666;
+  margin-bottom: 0.5rem;
 } 

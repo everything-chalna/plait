@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { action, examplePost, userContent, analysisResult, temperature = 0.7 } = req.body;
+    const { action, examplePosts, userContent, analysisResult, temperature = 0.7 } = req.body;
     
     console.log(`======= API 호출 시작 =======`);
     console.log(`Action: ${action}`);
@@ -19,9 +19,15 @@ export default async function handler(req, res) {
     console.log(`Time: ${new Date().toISOString()}`);
     
     if (action === 'analyze') {
-      console.log(`Example Post 길이: ${examplePost?.length || 0}자`);
+      console.log(`Example Posts 개수: ${examplePosts?.length || 0}개`);
+      examplePosts?.forEach((post, index) => {
+        console.log(`Example Post ${index + 1} 길이: ${post?.length || 0}자`);
+      });
     } else if (action === 'generate') {
-      console.log(`Example Post 길이: ${examplePost?.length || 0}자`);
+      console.log(`Example Posts 개수: ${examplePosts?.length || 0}개`);
+      examplePosts?.forEach((post, index) => {
+        console.log(`Example Post ${index + 1} 길이: ${post?.length || 0}자`);
+      });
       console.log(`User Content 길이: ${userContent?.length || 0}자`);
       console.log(`Analysis Result 길이: ${analysisResult?.length || 0}자`);
     }
@@ -30,35 +36,39 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Action is required' });
     }
 
-    if (action === 'analyze' && !examplePost) {
-      return res.status(400).json({ error: 'Example post is required for analysis' });
+    if (action === 'analyze' && (!examplePosts || examplePosts.length === 0)) {
+      return res.status(400).json({ error: 'At least one example post is required for analysis' });
     }
 
-    if (action === 'generate' && (!examplePost || !userContent)) {
-      return res.status(400).json({ error: 'Both example post and user content are required for generation' });
+    if (action === 'generate' && (!examplePosts || examplePosts.length === 0 || !userContent)) {
+      return res.status(400).json({ error: 'Both example posts and user content are required for generation' });
     }
 
     let prompt;
     if (action === 'analyze') {
-      prompt = `You are a content analysis AI Assistant. Your task is to analyze the provided text in detail according to the following categories:
+      // 여러 개의 예시를 분석하도록 프롬프트 수정
+      prompt = `You are a content analysis AI Assistant. Your task is to analyze the provided texts in detail according to the following categories:
 
-1. Tone: Analyze the emotional quality and approach of the text (casual, formal, advisory, etc.)
+1. Tone: Analyze the emotional quality and approach of the texts (casual, formal, advisory, etc.)
 2. Voice: Identify the perspective and speaking position (first-person, third-person, etc.)
 3. Personality: Describe the character traits and values that come through in the writing
 4. Style: Examine the writing techniques, sentence structure, and linguistic choices
 5. Structure: Analyze how the content is organized and formatted
-6. Length: Provide specifics about the text's size and reading time
+6. Length: Provide specifics about the texts' size and reading time
 
-For each category, provide specific examples from the text to support your analysis. Be thorough and detailed, focusing on identifying patterns that would allow someone to recreate similar content.
+Analyze the common patterns across all examples. For each category, provide specific examples from the texts to support your analysis. Be thorough and detailed, focusing on identifying patterns that would allow someone to recreate similar content.
 No talk; Just do.
 
-<Content>
-${examplePost}
-</Content>`;
+${examplePosts.map((post, index) => `
+<Content ${index + 1}>
+${post}
+</Content ${index + 1}>
+`).join('\n')}`;
     } else if (action === 'generate') {
+      // 여러 개의 예시를 참조하여 생성하도록 프롬프트 수정
       prompt = `You are an AI Assistant that generates content.
-Your purpose is to look at the <input> and generate content like the <output example>.
-First, look at the <input> and understand the content and topic. Then, refer to the <output example> to produce your output.
+Your purpose is to look at the <input> and generate content similar to the example outputs.
+First, look at the <input> and understand the content and topic. Then, refer to the example outputs to produce your output.
 Do not use Markdown style.
 Return only the output.
 No talk; Just do.
@@ -67,9 +77,11 @@ No talk; Just do.
 ${userContent}
 </input>
 
-<output example>
-${examplePost}
-</output example>`;
+${examplePosts.map((post, index) => `
+<output example ${index + 1}>
+${post}
+</output example ${index + 1}>
+`).join('\n')}`;
     }
     
     console.log(`프롬프트 유형: ${action}`);

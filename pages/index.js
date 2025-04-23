@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import styles from '../styles/Home.module.css';
 
 export default function Home() {
-  const [examplePost, setExamplePost] = useState('');
+  const [examplePosts, setExamplePosts] = useState(['']);
   const [userContent, setUserContent] = useState('');
   const [generatedContents, setGeneratedContents] = useState({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -13,10 +13,30 @@ export default function Home() {
   const [pendingGeneration, setPendingGeneration] = useState(false);
   const temperatureValues = [0, 0.5, 1.0, 1.5, 2.0];
 
+  const addExampleInput = () => {
+    if (examplePosts.length < 5) {
+      setExamplePosts([...examplePosts, '']);
+    }
+  };
+
+  const removeExampleInput = (index) => {
+    if (examplePosts.length > 1) {
+      const updatedExamples = [...examplePosts];
+      updatedExamples.splice(index, 1);
+      setExamplePosts(updatedExamples);
+    }
+  };
+
+  const handleExampleChange = (index, value) => {
+    const updatedExamples = [...examplePosts];
+    updatedExamples[index] = value;
+    setExamplePosts(updatedExamples);
+  };
+
   const handleAnalysis = async () => {
-    if (!examplePost.trim()) return;
+    const hasValidExamples = examplePosts.some(post => post.trim() !== '');
+    if (!hasValidExamples) return;
     
-    // 새 분석 시작 시 이전 상태 초기화
     setIsAnalyzing(true);
     setError('');
     setAnalysisResult('');
@@ -24,6 +44,8 @@ export default function Home() {
     setGeneratedContents({});
     
     try {
+      const validExamples = examplePosts.filter(post => post.trim() !== '');
+      
       const response = await fetch('/api/gemini', {
         method: 'POST',
         headers: {
@@ -31,12 +53,11 @@ export default function Home() {
         },
         body: JSON.stringify({
           action: 'analyze',
-          examplePost: examplePost,
+          examplePosts: validExamples,
           temperature: 0.7
         }),
       });
       
-      // 응답이 JSON인지 확인
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
         throw new Error('API 응답이 유효한 JSON 형식이 아닙니다.');
@@ -54,11 +75,10 @@ export default function Home() {
       console.error('분석 오류:', error);
       setError(error.message || '분석 중 오류가 발생했습니다.');
       setAnalysisComplete(false);
-      setPendingGeneration(false); // 에러 발생 시 대기 중인 생성 요청 취소
+      setPendingGeneration(false);
     } finally {
       setIsAnalyzing(false);
       
-      // 분석이 완료되고 대기 중인 생성 요청이 있으면 생성 시작
       if (pendingGeneration && userContent.trim() && analysisComplete) {
         setPendingGeneration(false);
         handleGenerateMultiple();
@@ -67,7 +87,6 @@ export default function Home() {
   };
 
   const handleGenerateMultiple = async () => {
-    // 분석 중이면 대기 상태로 설정하고 리턴
     if (isAnalyzing) {
       setPendingGeneration(true);
       return;
@@ -80,7 +99,8 @@ export default function Home() {
     setGeneratedContents({});
     
     try {
-      // 여러 Temperature 값에 대해 병렬로 API 호출
+      const validExamples = examplePosts.filter(post => post.trim() !== '');
+      
       const requests = temperatureValues.map(temp => 
         fetch('/api/gemini', {
           method: 'POST',
@@ -89,14 +109,13 @@ export default function Home() {
           },
           body: JSON.stringify({
             action: 'generate',
-            examplePost: examplePost,
+            examplePosts: validExamples,
             userContent: userContent,
             analysisResult: analysisResult,
             temperature: temp
           }),
         })
         .then(async response => {
-          // 응답이 JSON인지 확인
           const contentType = response.headers.get('content-type');
           if (!contentType || !contentType.includes('application/json')) {
             const text = await response.text();
@@ -116,10 +135,8 @@ export default function Home() {
         })
       );
       
-      // 모든 요청 결과 기다리기 (일부 실패해도 계속 진행)
       const results = await Promise.allSettled(requests);
       
-      // 성공한 결과만 모아서 객체로 변환
       const contents = {};
       let hasSuccessfulResult = false;
       
@@ -153,20 +170,46 @@ export default function Home() {
         
         <div className={styles.section}>
           <label className={styles.label}>
-            <span className={styles.labelBox}>Input</span> 예시 입력하기
+            <span className={styles.labelBox}>Input</span> 예시 입력하기 (최대 5개)
           </label>
-          <textarea 
-            className={styles.textarea}
-            value={examplePost}
-            onChange={(e) => setExamplePost(e.target.value)}
-            placeholder="예시 게시글을 입력하세요..."
-            disabled={isAnalyzing}
-          />
+          {examplePosts.map((example, index) => (
+            <div key={index} className={styles.exampleContainer}>
+              <textarea 
+                className={styles.textarea}
+                value={example}
+                onChange={(e) => handleExampleChange(index, e.target.value)}
+                placeholder={`예시 게시글 ${index + 1}을 입력하세요...`}
+                disabled={isAnalyzing}
+              />
+              <div className={styles.exampleButtonContainer}>
+                {index > 0 && (
+                  <button 
+                    className={`${styles.iconButton} ${styles.removeButton}`}
+                    onClick={() => removeExampleInput(index)}
+                    disabled={isAnalyzing}
+                    title="예시 삭제"
+                  >
+                    -
+                  </button>
+                )}
+                {index === examplePosts.length - 1 && examplePosts.length < 5 && (
+                  <button 
+                    className={`${styles.iconButton} ${styles.addButton}`}
+                    onClick={addExampleInput}
+                    disabled={isAnalyzing}
+                    title="예시 추가"
+                  >
+                    +
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
           <div className={styles.buttonContainer}>
             <button 
               className={styles.button}
               onClick={handleAnalysis}
-              disabled={isAnalyzing || !examplePost.trim()}
+              disabled={isAnalyzing || !examplePosts.some(post => post.trim() !== '')}
             >
               {isAnalyzing ? 'Analyzing...' : 'Analysis'}
             </button>
@@ -202,6 +245,7 @@ export default function Home() {
             </label>
             {temperatureValues.map((temp, index) => (
               <div key={temp} className={styles.outputContainer} style={{marginBottom: index < temperatureValues.length - 1 ? '15px' : '0'}}>
+                <div className={styles.temperatureLabel}>Temperature: {temp}</div>
                 {generatedContents[temp] ? (
                   <div className={styles.generatedText}>{generatedContents[temp]}</div>
                 ) : (
